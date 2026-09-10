@@ -1,0 +1,193 @@
+version: "1.0"
+brand: "AmazonHelp"
+description: "Intent taxonomy for Amazon customer support inquiries on Twitter discovered from empirical data."
+
+intents:
+  delivery_status:
+    name: "Delivery & Tracking Status"
+    description: "Customer inquiring about package tracking, shipping delays, estimated arrival dates, or packages marked delivered but not received."
+    keywords:
+      - "where is my package"
+      - "tracking"
+      - "delivery"
+      - "not arrived"
+      - "delayed"
+      - "late"
+      - "still haven't received"
+      - "marked delivered"
+      - "courier"
+      - "carrier"
+      - "shipping update"
+      - "driver"
+    examples:
+      - "My order was supposed to arrive today by 8pm but the tracking hasn't updated since yesterday."
+      - "It says my package was delivered to my porch, but I checked everywhere and there is nothing here."
+      - "Where is my package? The tracking number says in transit for 5 days."
+    boundaries:
+      - "If the package HAS arrived but items are broken or missing from the box, use 'damaged_or_missing'."
+      - "If the customer wants to cancel because it is late, use 'order_cancellation_or_change'."
+    expected_action: "AUTO_HANDLE"
+    historical_resolution_pattern: "Advise checking tracking via Your Orders, verify porch/household members, check carrier timeframe, direct to order tracking link or DM if overdue."
+
+  damaged_or_missing:
+    name: "Damaged, Defective, or Missing Items"
+    description: "Customer reports physical damage to packaging/product, defective item, missing components, or wrong product received."
+    keywords:
+      - "damaged"
+      - "broken"
+      - "smashed"
+      - "opened"
+      - "missing item"
+      - "empty box"
+      - "wrong item"
+      - "defective"
+      - "shattered"
+      - "cracked"
+    examples:
+      - "My package arrived completely ripped open and 2 items are missing from inside."
+      - "I ordered a coffee maker but received a box of phone cables instead."
+      - "The glass bowl I ordered arrived shattered into pieces."
+    boundaries:
+      - "If the customer wants to return an undamaged item because they changed their mind, use 'return_and_refund'."
+      - "If the entire package was never delivered, use 'delivery_status'."
+    expected_action: "AUTO_HANDLE"
+    historical_resolution_pattern: "Apologize for arrival condition, direct to Online Return Center (amazon.com/returns) for instant replacement or replacement order, request DM with details if sealed item was empty."
+
+  return_and_refund:
+    name: "Returns & Refund Inquiries"
+    description: "Customer asking how to return an item, return label issues, return drop-off locations (UPS/Kohl's/Whole Foods), or status of a pending refund."
+    keywords:
+      - "refund"
+      - "return"
+      - "return label"
+      - "drop off"
+      - "sent back"
+      - "money back"
+      - "reimbursement"
+      - "when will i get my refund"
+      - "return status"
+    examples:
+      - "I returned my headphones at the UPS store 4 days ago. When will I see my refund?"
+      - "Can I drop off my Amazon return at Whole Foods without printing a label?"
+      - "I sent the item back two weeks ago and haven't received my refund."
+    boundaries:
+      - "If customer reports an unrecognized bank charge, use 'payment_and_billing'."
+      - "If customer wants to cancel an order that hasn't shipped yet, use 'order_cancellation_or_change'."
+    expected_action: "AUTO_HANDLE"
+    historical_resolution_pattern: "State standard refund processing timeline (typically 3-5 business days after receipt), explain label-free return options via Returns Center, offer link to track refund status."
+
+  order_cancellation_or_change:
+    name: "Order Cancellation & Address/Payment Modification"
+    description: "Customer requesting to cancel an order, modify delivery address, or change order details before dispatch."
+    keywords:
+      - "cancel order"
+      - "cancel my order"
+      - "change address"
+      - "wrong shipping address"
+      - "modify order"
+      - "cancel pre-order"
+      - "stop shipment"
+    examples:
+      - "I accidentally placed an order to my old apartment address, can I update it to my current home?"
+      - "I want to cancel order #112-3849182 immediately before it ships."
+      - "Can I cancel the preorder I made last week?"
+    boundaries:
+      - "If customer wants to cancel their Amazon Prime subscription, use 'subscription_and_prime'."
+      - "If customer wants to close their entire Amazon account, use 'account_and_security'."
+    expected_action: "AUTO_HANDLE"
+    historical_resolution_pattern: "Instruct customer to visit Your Orders > Cancel Items if still in pending status; clarify that once dispatched, address cannot be changed and must be returned upon delivery."
+
+  account_and_security:
+    name: "Account Access, Security & Authentication"
+    description: "Customer facing locked account, forgotten password, 2-factor authentication failure, unauthorized access, or account closure."
+    keywords:
+      - "account locked"
+      - "hacked"
+      - "otp"
+      - "2fa"
+      - "verification code"
+      - "cannot log in"
+      - "password reset"
+      - "unauthorized access"
+      - "close my account"
+      - "security alert"
+    examples:
+      - "My account has been locked for suspicious activity and I cannot log in to access my orders."
+      - "I am not receiving the OTP verification code on my phone to log in."
+      - "Someone accessed my account and placed orders I didn't authorize. Help!"
+    boundaries:
+      - "If customer is asking about a routine credit card decline on an active account, use 'payment_and_billing'."
+      - "If customer is asking about Prime renewal specifically, use 'subscription_and_prime'."
+    expected_action: "ESCALATE"
+    historical_resolution_pattern: "Advise security protocols, NEVER request passwords or full credentials over Twitter, direct to secure account recovery link or escalate immediately to security specialists via private portal."
+
+  subscription_and_prime:
+    name: "Prime Membership & Digital Subscriptions"
+    description: "Questions or issues regarding Amazon Prime benefits, renewal charges, Prime Video/Music streaming errors, student discount, or membership cancellation."
+    keywords:
+      - "prime"
+      - "prime membership"
+      - "prime video"
+      - "prime music"
+      - "annual fee"
+      - "monthly charge"
+      - "student prime"
+      - "streaming error"
+      - "prime benefits"
+      - "cancel prime"
+    examples:
+      - "I was charged $139 for Prime renewal today, but I don't want it anymore. Can I cancel and get refunded?"
+      - "Prime Video is giving me error code 5004 on my smart TV."
+      - "How do I sign up for the student Prime discount?"
+    boundaries:
+      - "If customer has a problem with a physical goods order made using Prime shipping, classify under 'delivery_status'."
+      - "If customer sees an unexplained non-Prime charge on their bank statement, use 'payment_and_billing'."
+    expected_action: "AUTO_HANDLE"
+    historical_resolution_pattern: "Guide user to Manage Prime Membership page, explain pro-rated refund policy if benefits were unused, provide basic device restart/reinstall steps for streaming issues."
+
+  payment_and_billing:
+    name: "Payment, Gift Cards & Billing Disputes"
+    description: "Customer reporting double charges, unrecognized transaction, gift card redemption errors, promotional code issues, or payment method declines."
+    keywords:
+      - "double charged"
+      - "overcharged"
+      - "gift card"
+      - "promo code"
+      - "payment declined"
+      - "bank statement"
+      - "unrecognized charge"
+      - "billing error"
+      - "charged twice"
+    examples:
+      - "My credit card was charged twice for the same purchase."
+      - "My $50 Amazon gift card says claim code is invalid or already redeemed."
+      - "I applied a promo code at checkout but the discount was not reflected on my total."
+    boundaries:
+      - "If customer is asking for a refund for a returned package, use 'return_and_refund'."
+      - "If the charge is suspected account takeover/fraud, use 'account_and_security'."
+    expected_action: "ESCALATE"
+    historical_resolution_pattern: "Explain authorization hold vs settled charges; for gift card / billing discrepancies, direct to secure payment assistance page or escalate to human agent since billing details cannot be shared publicly."
+
+  general_feedback_or_complaint:
+    name: "General Inquiries, Escalated Complaints & Human Agent Requests"
+    description: "Customer expressing extreme frustration, demanding to speak to a manager/human, general corporate feedback, or vague praise/inquiry without specific order details."
+    keywords:
+      - "speak to human"
+      - "manager"
+      - "worst customer service"
+      - "terrible experience"
+      - "call me"
+      - "dm me"
+      - "ridiculous"
+      - "unacceptable"
+      - "complaint"
+      - "supervisor"
+    examples:
+      - "Your customer service is the absolute worst! I need a supervisor to call me right now."
+      - "Can someone from Amazon please DM me? I have an urgent issue."
+      - "Who can I contact to file an official complaint against a customer rep?"
+    boundaries:
+      - "If customer describes a specific late package even with anger, use 'delivery_status'."
+      - "If customer mentions broken items, use 'damaged_or_missing'."
+    expected_action: "ESCALATE"
+    historical_resolution_pattern: "Acknowledge frustration with empathy, request customer to reach out via direct phone/chat callback link (amazon.com/contact-us) or provide details via secure DM."
