@@ -124,25 +124,54 @@ class SupportAgent:
 
 def main():
     parser = argparse.ArgumentParser(description="Run AI Customer Support Agent.")
-    parser.add_argument("--message", type=str, required=True, help="Customer inquiry message")
+    parser.add_argument("--message", type=str, default=None, help="Customer inquiry message (optional; if omitted, launches interactive mode)")
     parser.add_argument("--format", type=str, default="pretty", choices=["pretty", "json"], help="Output display format")
     args = parser.parse_args()
 
     agent = SupportAgent()
-    result = agent.handle_message(args.message)
 
-    if args.format == "json":
-        print(json.dumps(result, indent=2))
-    else:
-        print("\n=================== AGENT TRIAGE RESPONSE ===================")
-        print(f"Intent:     {result['intent']} (Confidence: {result['confidence']:.2f})")
-        print(f"Decision:   {result['decision']}")
-        print(f"Reason:     {result['reason']}")
-        print(f"\nReply:\n{result['reply']}")
-        print("\nEvidence Used:")
-        for ev in result["evidence"]:
-            print(f"  - [{ev['case_id']}] (Sim: {ev['similarity']:.2f}) {ev['snippet']}")
-        print("=============================================================\n")
+    if args.message:
+        result = agent.handle_message(args.message)
+        if args.format == "json":
+            print(json.dumps(result, indent=2))
+        else:
+            _print_pretty(result)
+        return
+
+    # Interactive session
+    print("\n" + "=" * 65)
+    print("      AI CUSTOMER SUPPORT AGENT (INTERACTIVE SESSION)       ")
+    print("   Type your customer inquiry below, or 'quit' to exit.     ")
+    print("=" * 65 + "\n")
+
+    while True:
+        try:
+            user_input = input("Customer Inquiry > ").strip()
+            if not user_input:
+                continue
+            if user_input.lower() in ("quit", "exit", "q"):
+                print("Exiting interactive session.")
+                break
+            result = agent.handle_message(user_input)
+            if args.format == "json":
+                print(json.dumps(result, indent=2))
+            else:
+                _print_pretty(result)
+        except (KeyboardInterrupt, EOFError):
+            print("\nSession ended.")
+            break
+
+
+def _print_pretty(result: Dict[str, Any]):
+    print("\n------------------- AGENT RESPONSE -------------------")
+    print(f"Intent:     {result['intent']} (Confidence: {result['confidence']:.2f})")
+    print(f"Decision:   {result['decision']}")
+    print(f"Reason:     {result['reason']}")
+    print(f"\nReply:\n{result['reply']}")
+    print("\nEvidence Used:")
+    for ev in result.get("evidence", []):
+        print(f"  - [{ev['case_id']}] (Sim: {ev['similarity']:.2f}) {ev['snippet']}")
+    print("------------------------------------------------------\n")
 
 
 if __name__ == "__main__":
